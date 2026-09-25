@@ -5,13 +5,14 @@ CREATE DATABASE testdb;
 \c testdb
 
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(50),
-  email VARCHAR(100) UNIQUE
+    id SERIAL PRIMARY KEY,
+    login VARCHAR(50) UNIQUE,
+    password VARCHAR(100),
+    balance FLOAT
 );
 
-INSERT INTO users (name, email) VALUES
-  ('Chika', 'chika@example.com'),
-  ('Patrick', 'patrick@example.com'),
-  ('Spongebob', 'spongebob@example.com')
-ON CONFLICT (email) DO NOTHING;
+INSERT INTO users (login, password, balance) VALUES
+  ('Chika', 'secret', 0),
+  ('Patrick', 'super_secret', 100),
+  ('Spongebob', 'ultra_secret', 6969.69)
+ON CONFLICT (login) DO NOTHING;
