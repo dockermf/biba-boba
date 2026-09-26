@@ -15,6 +15,66 @@ type Account struct {
 	Balance  float64
 }
 
+/* Process user input */
+func sanitize_string(input string) string {
+    /* 1. Check if input is a valid string (prepend \ to special characters to
+    * avoid SQLi, length to MAX of the smallest fields db can store)
+     */
+     return ""
+}
+
+/* Try to insert new entry in users table */
+func create_account(login string, password string) error {
+    /* 1. Sanitize login and password
+     * 1. Check if login exists already; if true, return error
+     * 2. Insert new item, set balance to 0
+     */
+    return nil
+}
+
+/* Try to remove item by its id */
+func remove_account(acc Account) error {
+    /* 1. Query for item with id acc.ID
+     * 2. If found, remove, else return error
+     */
+    return nil
+}
+
+/* Try to set login */
+func set_login(acc Account, login string) error {
+    /* 1. Check if item with acc.ID exists; if it doesn't, return error
+     * 3. Check if current login and provided login differ 4. If they differ,
+     * update; else return error
+     */
+    return nil
+}
+
+/* Try to set password */
+func set_password(acc Account, password string) error {
+    /* 1. Check if item with acc.ID exists; if it doesn't, return error
+     * 2. Sanitize password
+     * 3. Update password
+     */
+    return nil
+}
+
+/* Try to set balance */
+func set_balance(ID uint64, value float64) error {
+    /* 1. Check if item with acc.ID exists; if it doesn't, return error
+     * 2. Set balance
+     */
+    return nil
+}
+
+/* Check if credentials match */
+func validate_login(login string, password string) error {
+    /* 1. Check if login exists and password matches; if one of these fail,
+     * return error
+     * 2. On success, return nil
+     */
+    return nil
+}
+
 func main() {
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
 	conn, err := pgx.Connect(context.Background(), "postgres://postgres:1234@localhost:5432/testdb")
