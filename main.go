@@ -15,6 +15,14 @@ type Account struct {
 	Balance  float64
 }
 
+const (
+    DB_USERNAME = "postgres"
+    DB_PASSWORD = "1234"
+    DB_HOST     = "localhost"
+    DB_PORT     = "5432"
+    DB_NAME     = "testdb"
+)
+
 /* Process user input */
 func sanitize_string(input string) string {
     /* 1. Check if input is a valid string (prepend \ to special characters to
@@ -77,7 +85,8 @@ func validate_login(login string, password string) error {
 
 func main() {
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
-	conn, err := pgx.Connect(context.Background(), "postgres://postgres:1234@localhost:5432/testdb")
+	url := "postgres://" + DB_USERNAME + ":" + DB_PASSWORD + "@" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME
+	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed connecting to database: %v\n", err)
 		os.Exit(1)
