@@ -25,7 +25,7 @@ const (
 )
 
 /* Process user input */
-func sanitize_string(input string) string {
+func SanitizeString(input string) string {
     /* 1. Check if input is a valid string (prepend \ to special characters to
     * avoid SQLi, length to MAX of the smallest fields db can store)
     */
@@ -33,7 +33,7 @@ func sanitize_string(input string) string {
 }
 
 /* Try to insert new entry in users table */
-func create_account(conn *pgx.Conn, login string, password string) error {
+func CreateAccount(conn *pgx.Conn, login string, password string) error {
     if login == "" || password == "" {
         fmt.Println("Login or password is empty")
         os.Exit(1)
@@ -86,7 +86,7 @@ func create_account(conn *pgx.Conn, login string, password string) error {
 }
 
 /* Try to remove item by its id */
-func remove_account(acc Account) error {
+func RemoveAccount(acc Account) error {
     /* 1. Query for item with id acc.ID
     * 2. If found, remove, else return error
     */
@@ -94,7 +94,7 @@ func remove_account(acc Account) error {
 }
 
 /* Try to set login */
-func set_login(acc Account, login string) error {
+func SetLogin(acc Account, login string) error {
     /* 1. Check if item with acc.ID exists; if it doesn't, return error
     * 3. Check if current login and provided login differ 4. If they differ,
     * update; else return error
@@ -103,7 +103,7 @@ func set_login(acc Account, login string) error {
 }
 
 /* Try to set password */
-func set_password(acc Account, password string) error {
+func SetPassword(acc Account, password string) error {
     /* 1. Check if item with acc.ID exists; if it doesn't, return error
     * 2. Sanitize password
     * 3. Update password
@@ -112,7 +112,7 @@ func set_password(acc Account, password string) error {
 }
 
 /* Try to set balance */
-func set_balance(ID uint64, value float64) error {
+func SetBalance(ID uint64, value float64) error {
     /* 1. Check if item with acc.ID exists; if it doesn't, return error
     * 2. Set balance
     */
@@ -120,7 +120,7 @@ func set_balance(ID uint64, value float64) error {
 }
 
 /* Check if credentials match */
-func validate_login(login string, password string) error {
+func ValidateLogin(login string, password string) error {
     /* 1. Check if login exists and password matches; if one of these fail,
     * return error
     * 2. On success, return nil
