@@ -39,12 +39,21 @@ func create_account(conn *pgx.Conn, login string, password string) error {
         os.Exit(1)
     }
 
+<<<<<<< HEAD
     var existingLogin string
     err := conn.QueryRow(
         context.Background(),
         "SELECT login FROM users WHERE login = $1",
         login,
     ).Scan(&existingLogin)
+=======
+	var existing_login string
+	err := conn.QueryRow(
+		context.Background(),
+		"SELECT login FROM users WHERE login = $1",
+		login,
+	).Scan(&existing_login)
+>>>>>>> 3400e9f (fix tabs, changed README (need be finish), edit main)
 
     if err == nil {
         fmt.Println("Такое имя занято")
