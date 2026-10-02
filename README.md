@@ -37,15 +37,15 @@
 - `account_type` - один из: `regular`, `admin`
 - `username` - имя пользователя (уникальное)
 - `password` - пароль
-- `balance` - баланс
+- `balance` - баланс\
 `Item` | Предметы
 - `item_id` - ID предмета
 - `name` - название предмета
-- `description` - описание предмета (опционально)
+- `description` - описание предмета (опционально)\
 `Inventory` | Инвентарь пользователя
 - `user_id` - ID пользователя
 - `item_id` - ID предмета
-- `item_quantity` - количество предмета
+- `item_quantity` - количество предмета\
 `Transaction` | История транзакций
 - `transaction_id` - ID транзакции
 - `transaction_type` - один из: `purchase` (покупка), `sell` (продажа), `transfer` (передача)
