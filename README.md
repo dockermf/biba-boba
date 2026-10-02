@@ -52,6 +52,7 @@
 `Transaction` | История транзакций
 - `transaction_id` - ID транзакции
 - `transaction_type` - один из: `purchase` (покупка), `sell` (продажа), `transfer` (передача)
+- `transaction_amount` - сумма транзакции
 - `item_id` - ID предмета
 - `item_quantity` - количество предмета
 - `buyer_id` - ID покупателя

@@ -51,13 +51,14 @@ CREATE TABLE IF NOT EXISTS Inventory (
 );
 
 CREATE TABLE IF NOT EXISTS Transaction (
-    transaction_id   INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    transaction_type VARCHAR(10) NOT NULL CHECK (transaction_type IN ('purchase', 'sell', 'transfer')),
-    transaction_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    item_id          INT REFERENCES Item(item_id),
-    item_quantity    INT CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
-    seller_id        INT REFERENCES Account(account_id),
-    buyer_id         INT REFERENCES Account(account_id)
+    transaction_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    transaction_type   VARCHAR(10) NOT NULL CHECK (transaction_type IN ('purchase', 'sell', 'transfer')),
+    transaction_date   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    transaction_amount FLOAT CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
+    item_id            INT REFERENCES Item(item_id),
+    item_quantity      INT CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
+    seller_id          INT REFERENCES Account(account_id),
+    buyer_id           INT REFERENCES Account(account_id)
     --CREATE INDEX idx_transaction_type ON Transaction (transaction_type)
 );
 
