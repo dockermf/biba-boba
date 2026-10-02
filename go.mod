@@ -1,4 +1,4 @@
-module stock
+module github.com/dockermf/biba-boba
 
 go 1.26.5
 
