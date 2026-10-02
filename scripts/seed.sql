@@ -4,6 +4,9 @@ CREATE DATABASE testdb;
 -- connect to testdb
 \c testdb
 
+-- enable hashing for passwords
+CREATE extension IF NOT EXISTS pgcrypto;
+
 /*
 * -- Style --
 * Table name: PascalCase, singular form (except Users, not to clash with user keyword)
