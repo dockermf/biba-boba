@@ -23,16 +23,16 @@ CREATE extension IF NOT EXISTS pgcrypto;
 * CREATE INDEX - способ ускорить поиск подходящих строчек (rows) по запросам (query), нам пока не нужно
 * https://www.postgresql.org/docs/current/indexes-intro.html
 */
-CREATE TABLE IF NOT EXISTS Account (
+CREATE TABLE Account (
     account_id   INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    account_type VARCHAR(10) NOT NULL CHECK (account_type IN ('regular', 'admin')),
+    account_type VARCHAR(10) NOT NULL CONSTRAINT valid_type CHECK (account_type IN ('regular', 'admin')),
     username     VARCHAR(50) UNIQUE NOT NULL,
     password     VARCHAR(100) NOT NULL,
-    balance      FLOAT CONSTRAINT positive_balance CHECK (balance >= 0) DEFAULT 500.0
+    balance      FLOAT NOT NULL CONSTRAINT positive_balance CHECK (balance >= 0) DEFAULT 500.0
     --CREATE INDEX idx_username ON Users (username)
 );
 
-CREATE TABLE IF NOT EXISTS Item (
+CREATE TABLE Item (
     item_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name        VARCHAR(50) NOT NULL,
     description TEXT
@@ -44,31 +44,31 @@ CREATE TABLE IF NOT EXISTS Item (
 * Например, если в Inventory есть account_id=528, а в Account нет, то будет ошибка
 * https://www.postgresql.org/docs/current/tutorial-fk.html
 */
-CREATE TABLE IF NOT EXISTS Inventory (
-    account_id    INT REFERENCES Account(account_id),
-    item_id       INT REFERENCES Item(item_id),
-    item_quantity INT CONSTRAINT positive_quantity CHECK (item_quantity >= 0)
+CREATE TABLE Inventory (
+    account_id    INT NOT NULL REFERENCES Account(account_id),
+    item_id       INT NOT NULL REFERENCES Item(item_id),
+    item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0)
 );
 
-CREATE TABLE IF NOT EXISTS Transaction (
+CREATE TABLE Transaction (
     transaction_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     transaction_type   VARCHAR(10) NOT NULL CHECK (transaction_type IN ('purchase', 'sell', 'transfer')),
     transaction_date   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    transaction_amount FLOAT CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
-    item_id            INT REFERENCES Item(item_id),
-    item_quantity      INT CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
-    seller_id          INT REFERENCES Account(account_id),
-    buyer_id           INT REFERENCES Account(account_id)
+    transaction_amount FLOAT NOT NULL CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
+    item_id            INT NOT NULL REFERENCES Item(item_id),
+    item_quantity      INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
+    seller_id          INT NOT NULL REFERENCES Account(account_id),
+    buyer_id           INT NOT NULL REFERENCES Account(account_id)
     --CREATE INDEX idx_transaction_type ON Transaction (transaction_type)
 );
 
 
-CREATE TABLE IF NOT EXISTS Listing (
+CREATE TABLE Listing (
     listing_id    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    seller_id     INT REFERENCES Account(account_id),
-    item_id       INT REFERENCES Item(item_id),
-    item_quantity INT CONSTRAINT positive_quantity CHECK (item_quantity > 0),
-    lot_price     FLOAT CONSTRAINT positive_price CHECK (lot_price > 0),
+    seller_id     INT NOT NULL REFERENCES Account(account_id),
+    item_id       INT NOT NULL REFERENCES Item(item_id),
+    item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity > 0),
+    lot_price     FLOAT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0)
 );
 
 INSERT INTO Account (account_type, username, password, balance) VALUES
