@@ -63,6 +63,14 @@ CREATE TABLE IF NOT EXISTS Transaction (
 );
 
 
+CREATE TABLE IF NOT EXISTS Listing (
+    seller_id INT NOT NULL REFERENCES Account(account_id),
+    item_id INT NOT NULL REFERENCES Item(item_id),
+    item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity > 0),
+    lot_price FLOAT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0),
+    listing_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY
+);
+
 INSERT INTO Account (account_type, username, password, balance) VALUES
     ('regular', 'Chika', 'secret', 0),
     ('admin', 'Patrick', 'super_secret', 100),
