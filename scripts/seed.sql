@@ -9,8 +9,8 @@ CREATE extension IF NOT EXISTS pgcrypto;
 
 /*
  * -- Style --
- * Table name: PascalCase, singular form (except Users, not to
- * clash with user keyword)
+ * Table name: PascalCase, singular form (except Users, and Cases not to clash
+ * with reserved keywords)
  * Column name: snake_case
 */
 
@@ -39,11 +39,46 @@ CREATE TABLE Account (
     --CREATE INDEX idx_username ON Users (username)
 );
 
+/*
+ * Rarity. Используется для установки редкости предмета/кейса.
+ * TODO: продумать политику ON DELETE (пока что ставит NULL).
+*/
+CREATE TABLE Rarity (
+    rarity_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    rarity    VARCHAR(50) UNIQUE NOT NULL DEFAULT 'N/A'
+);
+
+/*
+ * Item. Используется для хранения всех существующих предметов и их данных.
+*/
 CREATE TABLE Item (
-    item_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name        VARCHAR(50) NOT NULL,
-    description TEXT
+    item_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    item_name        VARCHAR(50) CONSTRAINT unique_item_name UNIQUE NOT NULL,
+    item_rarity      VARCHAR(50) NOT NULL REFERENCES Rarity(rarity) ON DELETE SET NULL,
+    item_description TEXT
     --CREATE INDEX idx_name ON Item (name)
+);
+
+/*
+ * Cases. Используется для хранения данных о кейсах и их данных.
+*/
+CREATE TABLE Cases (
+    case_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    case_name        VARCHAR(50) CONSTRAINT unique_case_name UNIQUE NOT NULL,
+    case_rarity      VARCHAR(50) NOT NULL REFERENCES Rarity(rarity) ON DELETE SET NULL,
+    case_description TEXT
+);
+
+/*
+ * CaseItem. Используется для хранения id предметов которые могут упасть с
+ * кейса с конкретным названием. UNIQUE (case_name, item_id) для того, чтобы не
+ * было дубликатов пар указанных колонн.
+*/
+CREATE TABLE CaseItem (
+    item_case_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    case_name    VARCHAR(50) NOT NULL REFERENCES Cases(case_name) ON DELETE CASCADE,
+    item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
+    CONSTRAINT unique_name_and_id UNIQUE (case_name, item_id)
 );
 
 /*
@@ -94,9 +129,28 @@ INSERT INTO Account (account_type, username, password, balance) VALUES
     ('admin', 'Spongebob', 'ultra_secret', 6969.69)
 ON CONFLICT (username) DO NOTHING;
 
-INSERT INTO Item (name, description) VALUES
-    ('Rock', 'Ooga booga'),
-    ('Stick', 'OOGA BOOGA');
+INSERT INTO Rarity (rarity) VALUES
+    ('Common'),
+    ('Rare'),
+    ('Epic'),
+    ('Mythic'),
+    ('Legendary');
+
+INSERT INTO Item (item_name, item_rarity, item_description) VALUES
+    ('Rock', 'Common', 'Ooga booga'),
+    ('Stick', 'Common', 'bad booga'),
+    ('Sharp rock', 'Rare', 'Ow'),
+    ('Long stick', 'Rare', 'OOO BOOGA BOOGA');
+
+INSERT INTO Cases (case_name, case_rarity) VALUES
+    ('Common Case', 'Common'),
+    ('Rare Case', 'Rare');
+
+INSERT INTO CaseItem (case_name, item_id) VALUES
+    ('Common Case', 1),
+    ('Common Case', 2),
+    ('Rare Case', 3),
+    ('Rare Case', 4);
 
 INSERT INTO Inventory (account_id, item_id, item_quantity) VALUES
     (2, 1, 10),
