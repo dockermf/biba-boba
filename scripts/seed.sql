@@ -41,7 +41,7 @@ CREATE TABLE Account (
 
 /*
  * Rarity. Используется для установки редкости предмета/кейса.
- * TODO: продумать политику ON DELETE (пока что ставит NULL).
+ * TODO: продумать политику ON DELETE (пока что ставит RESTRICT) - может поменяем на DEFAULT.
 */
 CREATE TABLE Rarity (
     rarity_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -50,35 +50,43 @@ CREATE TABLE Rarity (
 
 /*
  * Item. Используется для хранения всех существующих предметов и их данных.
+ - Выставил не SET NULL - а RESTRICT, потому что удалить редкость мы навряд-ли будем,
+ только по ошибке, поэтому редкость, на которую ссылаются предметы, удалить нельзя
+ -Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
+ не будем ебаться, id легче
 */
 CREATE TABLE Item (
     item_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     item_name        VARCHAR(50) CONSTRAINT unique_item_name UNIQUE NOT NULL,
-    item_rarity      VARCHAR(50) NOT NULL REFERENCES Rarity(rarity) ON DELETE SET NULL,
+    item_rarity      INT NOT NULL REFERENCES Rarity(rarity_id) ON DELETE RESTRICT,
     item_description TEXT
     --CREATE INDEX idx_name ON Item (name)
 );
 
 /*
  * Cases. Используется для хранения данных о кейсах и их данных.
+ -Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
+ не будем ебаться, id легче
 */
 CREATE TABLE Cases (
     case_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     case_name        VARCHAR(50) CONSTRAINT unique_case_name UNIQUE NOT NULL,
-    case_rarity      VARCHAR(50) NOT NULL REFERENCES Rarity(rarity) ON DELETE SET NULL,
+    case_rarity      INT NOT NULL REFERENCES Rarity(rarity_id) ON DELETE RESTRICT,
     case_description TEXT
 );
 
 /*
  * CaseItem. Используется для хранения id предметов которые могут упасть с
- * кейса с конкретным названием. UNIQUE (case_name, item_id) для того, чтобы не
+ * кейса с конкретным названием. UNIQUE (case_id, item_id) для того, чтобы не
  * было дубликатов пар указанных колонн.
+ - Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
+ не будем ебаться, id легче
 */
 CREATE TABLE CaseItem (
     item_case_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    case_name    VARCHAR(50) NOT NULL REFERENCES Cases(case_name) ON DELETE CASCADE,
+    case_id    INT NOT NULL REFERENCES Cases(case_id) ON DELETE CASCADE,
     item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
-    CONSTRAINT unique_name_and_id UNIQUE (case_name, item_id)
+    CONSTRAINT unique_case_id_item_id UNIQUE (case_id, item_id)
 );
 
 /*
@@ -136,20 +144,20 @@ INSERT INTO Rarity (rarity) VALUES
     ('Legendary');
 
 INSERT INTO Item (item_name, item_rarity, item_description) VALUES
-    ('Rock', 'Common', 'Ooga booga'),
-    ('Stick', 'Common', 'bad booga'),
-    ('Sharp rock', 'Rare', 'Ow'),
-    ('Long stick', 'Rare', 'OOO BOOGA BOOGA');
+    ('Rock', (SELECT rarity_id FROM Rarity WHERE rarity = 'Common'), 'Ooga booga'),
+    ('Stick', (SELECT rarity_id FROM Rarity WHERE rarity = 'Common'), 'bad booga'),
+    ('Sharp rock', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'), 'Ow'),
+    ('Long stick', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'), 'OOO BOOGA BOOGA');
 
 INSERT INTO Cases (case_name, case_rarity) VALUES
-    ('Common Case', 'Common'),
-    ('Rare Case', 'Rare');
+    ('Common Case', (SELECT rarity_id FROM Rarity WHERE rarity = 'Common')),
+    ('Rare Case', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'));
 
-INSERT INTO CaseItem (case_name, item_id) VALUES
-    ('Common Case', 1),
-    ('Common Case', 2),
-    ('Rare Case', 3),
-    ('Rare Case', 4);
+INSERT INTO CaseItem (case_id, item_id) VALUES
+    ((SELECT case_id FROM Cases WHERE case_name = 'Common Case'), 1),
+    ((SELECT case_id FROM Cases WHERE case_name = 'Common Case'), 2),
+    ((SELECT case_id FROM Cases WHERE case_name = 'Rare Case'), 3),
+    ((SELECT case_id FROM Cases WHERE case_name = 'Rare Case'), 4);
 
 INSERT INTO Inventory (account_id, item_id, item_quantity) VALUES
     (2, 1, 10),
