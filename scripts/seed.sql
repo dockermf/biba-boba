@@ -45,9 +45,10 @@ CREATE TABLE Item (
 * https://www.postgresql.org/docs/current/tutorial-fk.html
 */
 CREATE TABLE Inventory (
-    account_id    INT NOT NULL REFERENCES Account(account_id),
-    item_id       INT NOT NULL REFERENCES Item(item_id),
-    item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0)
+    account_id    INT REFERENCES Account(account_id) ON DELETE CASCADE,
+    item_id       INT REFERENCES Item(item_id) ON DELETE CASCADE,
+    item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
+    PRIMARY KEY (account_id, item_id)
 );
 
 CREATE TABLE Transaction (
