@@ -105,7 +105,7 @@ CREATE TABLE Inventory (
 CREATE TABLE Transaction (
     transaction_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     transaction_type   VARCHAR(10) NOT NULL CHECK (transaction_type IN ('purchase', 'sell', 'transfer')),
-    transaction_date   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    transaction_date   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     transaction_amount FLOAT NOT NULL CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
     item_id            INT NOT NULL REFERENCES Item(item_id),
     item_quantity      INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
@@ -114,11 +114,10 @@ CREATE TABLE Transaction (
     --CREATE INDEX idx_transaction_type ON Transaction (transaction_type)
 );
 
-
 CREATE TABLE Listing (
     listing_id    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    seller_id     INT NOT NULL REFERENCES Account(account_id),
-    item_id       INT NOT NULL REFERENCES Item(item_id),
+    seller_id     INT NOT NULL REFERENCES Account(account_id) ON DELETE CASCADE,
+    item_id       INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
     item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity > 0),
     lot_price     FLOAT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0)
 );
