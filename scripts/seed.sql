@@ -8,20 +8,27 @@ CREATE DATABASE testdb;
 CREATE extension IF NOT EXISTS pgcrypto;
 
 /*
-* -- Style --
-* Table name: PascalCase, singular form (except Users, not to clash with user keyword)
-* Column name: snake_case
+ * -- Style --
+ * Table name: PascalCase, singular form (except Users, not to
+ * clash with user keyword)
+ * Column name: snake_case
 */
 
 /*
-* GENERATED ALWAYS AS IDENTITY == то же самое что SERIAL, но строже (нельзя вставить account_id, будет ошибка)
-* https://www.postgresql.org/docs/current/ddl-identity-columns.html
+ * GENERATED ALWAYS AS IDENTITY - то же самое что SERIAL, но строже (нельзя
+ * вручную вставить account_id, выдаст ошибку)
+ * https://www.postgresql.org/docs/current/ddl-identity-columns.html
 
-* CONSTRAINT positive_balance - дает название ограничению (balance >= 0), название будет видно название в логах
-* https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS
+ * CONSTRAINT positive_balance - дает название ограничению (balance >= 0);
+ * название ограничения будет видно в логах. Не гарантирует, что значение не NULL,
+ * поэтому тоже проверяем.
+ * https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS
 
-* CREATE INDEX - способ ускорить поиск подходящих строчек (rows) по запросам (query), нам пока не нужно
-* https://www.postgresql.org/docs/current/indexes-intro.html
+ * account_type IN ('regular', 'admin') - так можно проверить, чтобы
+ * account_type был одним из разрешенных значений.
+
+ * CREATE INDEX - способ ускорить поиск подходящих строчек (rows) по запросам (query), нам пока не нужно
+ * https://www.postgresql.org/docs/current/indexes-intro.html
 */
 CREATE TABLE Account (
     account_id   INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -40,9 +47,18 @@ CREATE TABLE Item (
 );
 
 /*
-* REFERENCES Account(account_id) == account_id в Inventory должен так же существовать в Account
-* Например, если в Inventory есть account_id=528, а в Account нет, то будет ошибка
-* https://www.postgresql.org/docs/current/tutorial-fk.html
+ * Inventory - таблица, где двойной PK: (id аккаунта, id предмета).
+ * Используется для хранения количества конкретного предмета у конкретного
+ * аккаунта.
+
+ * REFERENCES Account(account_id) - account_id в таблице Inventory должен так же
+ * существовать в таблице Account. Например: если в Inventory есть account_id=528, а в
+ * Account нет, то выдаст ошибку, в то же время NULL принимается и не считается
+ * ошибкой. https://www.postgresql.org/docs/current/tutorial-fk.html
+
+ * ON DELETE CASCADE - если в ориг таблице удалим ряд с account_id/item_id, то
+ * в этой таблице тоже (ибо нет смысла хранить инвентарь несуществующего
+ * аккаунта или количество несуществующего предмета).
 */
 CREATE TABLE Inventory (
     account_id    INT REFERENCES Account(account_id) ON DELETE CASCADE,
