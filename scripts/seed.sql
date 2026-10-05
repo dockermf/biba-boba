@@ -147,11 +147,31 @@ INSERT INTO Cases (case_name, case_rarity) VALUES
     ('Rare Case', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'));
 
 INSERT INTO CaseItem (case_id, item_id) VALUES
-    ((SELECT case_id FROM Cases WHERE case_name = 'Common Case'), 1),
-    ((SELECT case_id FROM Cases WHERE case_name = 'Common Case'), 2),
-    ((SELECT case_id FROM Cases WHERE case_name = 'Rare Case'), 3),
-    ((SELECT case_id FROM Cases WHERE case_name = 'Rare Case'), 4);
+    (
+        (SELECT case_id FROM Cases WHERE case_name = 'Common Case'),
+        (SELECT item_id FROM Item WHERE item_name = 'Rock')
+    ),
+    (
+        (SELECT case_id FROM Cases WHERE case_name = 'Common Case'),
+        (SELECT item_id FROM Item WHERE item_name = 'Stick')
+    ),
+    (
+        (SELECT case_id FROM Cases WHERE case_name = 'Rare Case'),
+        (SELECT item_id FROM Item WHERE item_name = 'Sharp rock')
+    ),
+    (
+        (SELECT case_id FROM Cases WHERE case_name = 'Rare Case'),
+        (SELECT item_id FROM Item WHERE item_name = 'Long stick')
+    );
 
 INSERT INTO Inventory (account_id, item_id, item_quantity) VALUES
-    (2, 1, 10),
-    (3, 2, 5);
+    (
+        (SELECT account_id FROM Account WHERE username = 'Spongebob'),
+        (SELECT item_id FROM Item WHERE item_name = 'Long stick'),
+        10
+    ),
+    (
+        (SELECT account_id FROM Account WHERE username = 'Patrick'),
+        (SELECT item_id FROM Item WHERE item_name = 'Sharp rock'),
+        5
+    );
