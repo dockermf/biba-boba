@@ -12,8 +12,10 @@ services:
         ports:
             - 5432:5432
         volumes:
-            - ${PWD}/database:/var/lib/postgresql
-            - ${PWD}/scripts/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+            - ${PWD}/postgres/postgresql.conf:/etc/postgresql/postgresql.conf
+            - ${PWD}/postgres/database:/var/lib/postgresql
+            - ${PWD}/postgres/scripts/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+        command: postgres -c config_file=/etc/postgresql/postgresql.conf
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: 1234
