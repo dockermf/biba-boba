@@ -40,8 +40,9 @@ CREATE TABLE Account (
 );
 
 /*
- * Rarity. Используется для установки редкости предмета/кейса.
- * TODO: продумать политику ON DELETE (пока что ставит RESTRICT) - может поменяем на DEFAULT.
+ * Rarity. Используется для установки редкости предмета/кейса. Политика ON
+ * DELETE у таблиц, которые ссылаются на колонку rarity_id должна быть
+ * RESTRICT.
 */
 CREATE TABLE Rarity (
     rarity_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -50,10 +51,6 @@ CREATE TABLE Rarity (
 
 /*
  * Item. Используется для хранения всех существующих предметов и их данных.
- - Выставил не SET NULL - а RESTRICT, потому что удалить редкость мы навряд-ли будем,
- только по ошибке, поэтому редкость, на которую ссылаются предметы, удалить нельзя
- -Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
- не будем ебаться, id легче
 */
 CREATE TABLE Item (
     item_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -65,8 +62,6 @@ CREATE TABLE Item (
 
 /*
  * Cases. Используется для хранения данных о кейсах и их данных.
- -Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
- не будем ебаться, id легче
 */
 CREATE TABLE Cases (
     case_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -79,8 +74,6 @@ CREATE TABLE Cases (
  * CaseItem. Используется для хранения id предметов которые могут упасть с
  * кейса с конкретным названием. UNIQUE (case_id, item_id) для того, чтобы не
  * было дубликатов пар указанных колонн.
- - Поменял ссылку не на имя а на id, потому что быстрее, и если захотим поменять имя, 
- не будем ебаться, id легче
 */
 CREATE TABLE CaseItem (
     item_case_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
