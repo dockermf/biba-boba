@@ -76,8 +76,8 @@ CREATE TABLE Cases (
  * было дубликатов пар указанных колонн.
 */
 CREATE TABLE CaseItem (
-    item_case_id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    case_id    INT NOT NULL REFERENCES Cases(case_id) ON DELETE CASCADE,
+    id           INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    case_id      INT NOT NULL REFERENCES Cases(case_id) ON DELETE CASCADE,
     item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
     CONSTRAINT unique_case_id_item_id UNIQUE (case_id, item_id)
 );
