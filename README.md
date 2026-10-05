@@ -31,7 +31,6 @@
 
 ## Модели данных
 
--- TODO: добавить кейсы\
 `Account` | Аккаунты
 - `account_id` - ID аккаунта
 - `account_type` - один из: `regular`, `admin`
@@ -39,10 +38,27 @@
 - `password` - пароль
 - `balance` - баланс
 
+`Rarity` | Редкость
+- `rarity_id` - ID редкости
+- `rarity` - название редкости 
+
 `Item` | Предметы
 - `item_id` - ID предмета
-- `name` - название предмета
-- `description` - описание предмета (опционально)
+- `item_name` - название предмета
+- `item_rarity` - редкость предмета
+- `item_description` - описание предмета (опционально)
+
+`Cases` | Кейс
+- `case_id` - ID кейса
+- `case_name` - имя кейса
+- `case_rarirt` - редкость кейса
+- `case_description` - описание кейса (опционально)
+
+`CaseItem` | Предмет внутри кейса
+- `id` - ID предмета внтури кейса
+- `case_id` - ID кейса ( в которой будет эта шмотка)
+- `item_id` - ID предмета
+
 
 `Inventory` | Инвентарь пользователя
 - `account_id` - ID пользователя
@@ -59,12 +75,12 @@
 `Transaction` | История транзакций
 - `transaction_id` - ID транзакции
 - `transaction_type` - один из: `purchase` (покупка), `sell` (продажа), `transfer` (передача)
+- `transaction_date` - дата, время (с часовым поясом) транзакции
 - `transaction_amount` - сумма транзакции
 - `item_id` - ID предмета
 - `item_quantity` - количество предмета
 - `buyer_id` - ID покупателя
 - `seller_id` - ID продавца
-- `transaction_date` - дата, время (с часовым поясом) транзакции
 
 ## Важные моменты
 
