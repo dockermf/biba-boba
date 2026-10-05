@@ -79,6 +79,7 @@ CREATE TABLE CaseItem (
     id           INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     case_id      INT NOT NULL REFERENCES Cases(case_id) ON DELETE CASCADE,
     item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
+    drop_chance FLOAT NOT NULL CONSTRAINT chance_positive CHECK (drop_chance >= 0.0 AND drop_chance <= 100.0) DEFAULT 0.0,
     CONSTRAINT unique_case_id_item_id UNIQUE (case_id, item_id)
 );
 
