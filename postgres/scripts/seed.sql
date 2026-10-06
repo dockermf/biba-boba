@@ -9,8 +9,8 @@ CREATE extension IF NOT EXISTS pgcrypto;
 
 /*
  * -- Style --
- * Table name: PascalCase, singular form (except Users, and Cases not to clash
- * with reserved keywords)
+ * Table name: PascalCase, singular form (except Users not to clash with
+ * reserved keywords)
  * Column name: snake_case
 */
 
@@ -61,25 +61,25 @@ CREATE TABLE Item (
 );
 
 /*
- * Cases. Используется для хранения данных о кейсах и их данных.
+ * Box. Используется для хранения данных о ящиках и их данных.
 */
-CREATE TABLE Cases (
-    case_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    case_name        VARCHAR(50) CONSTRAINT unique_case_name UNIQUE NOT NULL,
-    case_rarity      INT NOT NULL REFERENCES Rarity(rarity_id) ON DELETE RESTRICT,
-    case_description TEXT
+CREATE TABLE Box (
+    box_id          INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    box_name        VARCHAR(50) CONSTRAINT unique_case_name UNIQUE NOT NULL,
+    box_rarity      INT NOT NULL REFERENCES Rarity(rarity_id) ON DELETE RESTRICT,
+    box_description TEXT
 );
 
 /*
- * CaseItem. Используется для хранения id предметов которые могут упасть с
- * кейса с конкретным названием. UNIQUE (case_id, item_id) для того, чтобы не
+ * BoxItem. Используется для хранения id предметов которые могут упасть с
+ * ящика с конкретным названием. UNIQUE (box_id, item_id) для того, чтобы не
  * было дубликатов пар указанных колонн.
 */
-CREATE TABLE CaseItem (
-    case_id      INT NOT NULL REFERENCES Cases(case_id) ON DELETE CASCADE,
+CREATE TABLE BoxItem (
+    box_id      INT NOT NULL REFERENCES Box(box_id) ON DELETE CASCADE,
     item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
     drop_chance  FLOAT NOT NULL CONSTRAINT chance_positive CHECK (drop_chance >= 0.0 AND drop_chance <= 100.0) DEFAULT 0.0,
-    CONSTRAINT pk_case_id_item_id PRIMARY KEY (case_id, item_id)
+    CONSTRAINT pk_box_id_item_id PRIMARY KEY (box_id, item_id)
 );
 
 /*
@@ -142,25 +142,25 @@ INSERT INTO Item (item_name, item_rarity, item_description) VALUES
     ('Sharp rock', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'), 'Ow'),
     ('Long stick', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'), 'OOO BOOGA BOOGA');
 
-INSERT INTO Cases (case_name, case_rarity) VALUES
-    ('Common Case', (SELECT rarity_id FROM Rarity WHERE rarity = 'Common')),
-    ('Rare Case', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'));
+INSERT INTO Box (box_name, box_rarity) VALUES
+    ('Common Box', (SELECT rarity_id FROM Rarity WHERE rarity = 'Common')),
+    ('Rare Box', (SELECT rarity_id FROM Rarity WHERE rarity = 'Rare'));
 
-INSERT INTO CaseItem (case_id, item_id) VALUES
+INSERT INTO BoxItem (box_id, item_id) VALUES
     (
-        (SELECT case_id FROM Cases WHERE case_name = 'Common Case'),
+        (SELECT box_id FROM Box WHERE box_name = 'Common Box'),
         (SELECT item_id FROM Item WHERE item_name = 'Rock')
     ),
     (
-        (SELECT case_id FROM Cases WHERE case_name = 'Common Case'),
+        (SELECT box_id FROM Box WHERE box_name = 'Common Box'),
         (SELECT item_id FROM Item WHERE item_name = 'Stick')
     ),
     (
-        (SELECT case_id FROM Cases WHERE case_name = 'Rare Case'),
+        (SELECT box_id FROM Box WHERE box_name = 'Rare Box'),
         (SELECT item_id FROM Item WHERE item_name = 'Sharp rock')
     ),
     (
-        (SELECT case_id FROM Cases WHERE case_name = 'Rare Case'),
+        (SELECT box_id FROM Box WHERE box_name = 'Rare Box'),
         (SELECT item_id FROM Item WHERE item_name = 'Long stick')
     );
 
