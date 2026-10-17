@@ -108,6 +108,7 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 	return nil
 }
 
+// Retrieve account from `Account` table by ID.
 func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, error) {
 	if ID == 0 {
 		return nil, fmt.Errorf("invalid account ID: %d", ID)
