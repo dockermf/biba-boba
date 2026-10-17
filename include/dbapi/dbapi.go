@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type AccountType int32
@@ -23,12 +24,12 @@ const (
 // Maps for account types
 var (
 	AccountType_Name = map[AccountType]string{
-		0: "Regular",
-		1: "Admin",
+		0: "regular",
+		1: "admin",
 	}
 	AccountType_Value = map[string]AccountType{
-		"Regular": 0,
-		"Admin":   1,
+		"regular": 0,
+		"admin":   1,
 	}
 )
 
