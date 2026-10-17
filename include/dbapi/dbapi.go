@@ -59,42 +59,50 @@ type Account struct {
 	Balance float64
 }
 
+// ERRORS
+var (
+	ErrInvalidInput    = errors.New("username or password is empty")
+	ErrUsernameTaken   = errors.New("username already taken")
+	ErrAccountNotFound = errors.New("account not found")
+)
+
 // Insert new row into `Account` table.
-func CreateAccount(conn *pgx.Conn, account_type AccountType, username string, password string) error {
+func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountType, username, password string) error {
 	if username == "" || password == "" {
-		return errors.New("Login or password empty")
+		return ErrInvalidInput
 	}
 
-	if _, ok := AccountType_Name[account_type]; !ok {
-		return fmt.Errorf("Account type %v is invalid", account_type)
+	typeName, ok := AccountType_Name[accountType]
+	if !ok {
+		return fmt.Errorf("invalid account type: %v", accountType)
 	}
 
 	var existingAccount string
-	err := conn.QueryRow(
-		context.Background(),
+	err := db.QueryRow(
+		ctx,
 		"SELECT username FROM Account WHERE username = $1",
 		username,
 	).Scan(&existingAccount)
 
 	if err == nil {
-		return fmt.Errorf("Name '%s' already taken", existingAccount)
+		return ErrUsernameTaken
 	}
 
-	// Weird line?
+	// Проверяем, что запрос завершился именно с ErrNoRows
 	if !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("Expected error pgx.ErrNoRows, got: %v\n", err)
+		return fmt.Errorf("Expected error pgx.ErrNoRows, got: %w", err)
 	}
 
 	// TODO: hash password
-	_, err = conn.Exec(
-		context.Background(),
+	_, err = db.Exec(
+		ctx,
 		"INSERT INTO Account (account_type, username, password) VALUES ($1, $2, $3)",
-		account_type,
+		typeName,
 		username,
 		password,
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to create new account: %v", err)
+		return fmt.Errorf("Failed to create new account: %w", err)
 	}
 
 	return nil
