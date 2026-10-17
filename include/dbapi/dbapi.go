@@ -108,6 +108,38 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 	return nil
 }
 
+func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, error) {
+	if ID == 0 {
+		return nil, fmt.Errorf("invalid account ID: %d", ID)
+	}
+
+	var ac Account
+	var str string
+
+	err := db.QueryRow(
+		ctx,
+		"SELECT account_id, account_type, username, password, balance FROM Account WHERE account_id = $1",
+		ID,
+	).Scan(&ac.ID, &str, &ac.Username, &ac.Password, &ac.Balance)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrAccountNotFound
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get a account: %w", err)
+	}
+
+	value, ok := AccountType_Value[str]
+	if !ok {
+		return nil, fmt.Errorf("unknown account type in database: %s", str)
+	}
+
+	ac.AccountType = value
+
+	return &ac, nil
+}
+
 // Delete row from `Account` table.
 func RemoveAccount(conn *pgx.Conn, a Account) error {
 	/* 1. Query for row with id a.ID
