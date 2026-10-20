@@ -124,12 +124,12 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 		ID,
 	).Scan(&acc.ID, &accType, &acc.Username, &acc.Password, &acc.Balance)
 
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, ErrAccountNotFound
-	}
-
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get a account: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrAccountNotFound
+		} else {
+			return nil, fmt.Errorf("Failed to get account: %w", err)
+		}
 	}
 
 	if value, ok := AccountType_Value[accType]; ok {
