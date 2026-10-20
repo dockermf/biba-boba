@@ -78,24 +78,12 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 		return fmt.Errorf("Invalid account type: %v", accountType)
 	}
 
-	var existingAccount string
-	err := db.QueryRow(
-		ctx,
-		"SELECT username FROM Account WHERE username = $1",
-		username,
-	).Scan(&existingAccount)
-
-	if err == nil {
+	if accountExistsByName(ctx, db, username) {
 		return ErrUsernameTaken
 	}
 
-	// Проверяем, что запрос завершился именно с ErrNoRows
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("Expected error pgx.ErrNoRows, got: %w", err)
-	}
-
 	// TODO: hash password
-	_, err = db.Exec(
+	_, err := db.Exec(
 		ctx,
 		"INSERT INTO Account (account_type, username, password) VALUES ($1, $2, $3)",
 		typeName,
@@ -115,6 +103,10 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 		return nil, fmt.Errorf("Invalid account ID: %d", ID)
 	}
 
+	if !accountExistsByID(ctx, db, ID) {
+		return nil, ErrAccountNotFound
+	}
+
 	var acc Account
 	var accType string
 
@@ -125,11 +117,7 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 	).Scan(&acc.ID, &accType, &acc.Username, &acc.Password, &acc.Balance)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrAccountNotFound
-		} else {
-			return nil, fmt.Errorf("Failed to get account: %w", err)
-		}
+		return nil, fmt.Errorf("Unexpected error: %w", err)
 	}
 
 	if value, ok := AccountType_Value[accType]; ok {
@@ -147,30 +135,17 @@ func RemoveAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) error {
 		return fmt.Errorf("Invalid account ID: %d", ID)
 	}
 
-	var accountExists uint64
-	err := db.QueryRow(
-		ctx,
-		"SELECT account_id FROM Account WHERE account_id = $1",
-		ID,
-	).Scan(&accountExists)
-
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			// target account doesn't exist
-			return ErrAccountNotFound
-		} else {
-			// random bullshit happened here, not recovering
-			return fmt.Errorf("Expected pgx.ErrNoRows or nil, got: %w", err)
-		}
+	if !accountExistsByID(ctx, db, ID) {
+		return ErrAccountNotFound
 	}
 	// account exists, disintegrate that bitch
-	_, err = db.Exec(
+	_, err := db.Exec(
 		ctx,
 		"DELETE FROM Account WHERE account_id = $1",
 		ID,
 	)
 	if err != nil {
-		return fmt.Errorf("Failed to delete account: %w", err)
+		return fmt.Errorf("Failed to delete account (id %d): %w", ID, err)
 	}
 
 	return nil
