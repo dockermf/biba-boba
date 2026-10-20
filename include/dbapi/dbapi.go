@@ -56,7 +56,7 @@ type Account struct {
 	// Balance is account's current balance. Can't be negative.
 	//
 	// Represents `balance` column.
-	Balance float64
+	Balance int64
 }
 
 // ERRORS

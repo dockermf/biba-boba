@@ -36,7 +36,7 @@
 - `account_type` - один из: `regular`, `admin`
 - `username` - имя пользователя (уникальное)
 - `password` - пароль
-- `balance` - баланс
+- `balance` - баланс в минимальных единицах
 
 `Rarity` | Редкость
 - `rarity_id` - ID редкости
@@ -69,13 +69,13 @@
 - `seller_id` - ID продавца
 - `item_id` - ID предмета
 - `item_quantity` - количество предмета
-- `lot_price` - цена за весь лот (включая все предметы)
+- `lot_price` - цена за весь лот (включая все предметы) в минимальных единицах
 
 `Transaction` | История транзакций
 - `transaction_id` - ID транзакции
 - `transaction_type` - один из: `purchase` (покупка), `sell` (продажа), `transfer` (передача)
 - `transaction_date` - дата, время (с часовым поясом) транзакции
-- `transaction_amount` - сумма транзакции
+- `transaction_amount` - сумма транзакции в минимальных единицах
 - `item_id` - ID предмета
 - `item_quantity` - количество предмета
 - `buyer_id` - ID покупателя

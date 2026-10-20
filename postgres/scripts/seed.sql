@@ -35,7 +35,7 @@ CREATE TABLE Account (
     account_type VARCHAR(10) NOT NULL CONSTRAINT valid_type CHECK (account_type IN ('regular', 'admin')),
     username     VARCHAR(50) UNIQUE NOT NULL,
     password     VARCHAR(100) NOT NULL,
-    balance      FLOAT NOT NULL CONSTRAINT positive_balance CHECK (balance >= 0) DEFAULT 500.0
+    balance      BIGINT NOT NULL CONSTRAINT positive_balance CHECK (balance >= 0) DEFAULT 50000 --это короче 500.0 (делим на 100)
     --CREATE INDEX idx_username ON Users (username)
 );
 
@@ -107,7 +107,7 @@ CREATE TABLE Transaction (
     transaction_id     INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     transaction_type   VARCHAR(10) NOT NULL CHECK (transaction_type IN ('purchase', 'sell', 'transfer')),
     transaction_date   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    transaction_amount FLOAT NOT NULL CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
+    transaction_amount BIGINT NOT NULL CONSTRAINT positive_transaction CHECK (transaction_amount >= 0),
     item_id            INT NOT NULL REFERENCES Item(item_id),
     item_quantity      INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity >= 0),
     seller_id          INT NOT NULL REFERENCES Account(account_id),
@@ -120,13 +120,13 @@ CREATE TABLE Listing (
     seller_id     INT NOT NULL REFERENCES Account(account_id) ON DELETE CASCADE,
     item_id       INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
     item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity > 0),
-    lot_price     FLOAT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0)
+    lot_price     BIGINT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0)
 );
 
 INSERT INTO Account (account_type, username, password, balance) VALUES
     ('regular', 'Chika', 'secret', 0),
-    ('admin', 'Patrick', 'super_secret', 100),
-    ('admin', 'Spongebob', 'ultra_secret', 6969.69)
+    ('admin', 'Patrick', 'super_secret', 10000),
+    ('admin', 'Spongebob', 'ultra_secret', 696969)
 ON CONFLICT (username) DO NOTHING;
 
 INSERT INTO Rarity (rarity) VALUES
