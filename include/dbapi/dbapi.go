@@ -61,9 +61,9 @@ type Account struct {
 
 // ERRORS
 var (
-	ErrInvalidInput    = errors.New("username or password is empty")
-	ErrUsernameTaken   = errors.New("username already taken")
-	ErrAccountNotFound = errors.New("account not found")
+	ErrInvalidInput    = errors.New("Username or password is empty")
+	ErrUsernameTaken   = errors.New("Username already taken")
+	ErrAccountNotFound = errors.New("Account not found")
 )
 
 // Insert new row into `Account` table.
@@ -71,10 +71,11 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 	if username == "" || password == "" {
 		return ErrInvalidInput
 	}
+	// TODO: sanitize password|username before doing SQL
 
 	typeName, ok := AccountType_Name[accountType]
 	if !ok {
-		return fmt.Errorf("invalid account type: %v", accountType)
+		return fmt.Errorf("Invalid account type: %v", accountType)
 	}
 
 	var existingAccount string
@@ -111,17 +112,17 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 // Retrieve account from `Account` table by ID.
 func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, error) {
 	if ID == 0 {
-		return nil, fmt.Errorf("invalid account ID: %d", ID)
+		return nil, fmt.Errorf("Invalid account ID: %d", ID)
 	}
 
-	var ac Account
-	var str string
+	var acc Account
+	var accType string
 
 	err := db.QueryRow(
 		ctx,
 		"SELECT account_id, account_type, username, password, balance FROM Account WHERE account_id = $1",
 		ID,
-	).Scan(&ac.ID, &str, &ac.Username, &ac.Password, &ac.Balance)
+	).Scan(&acc.ID, &accType, &acc.Username, &acc.Password, &acc.Balance)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrAccountNotFound
@@ -131,14 +132,13 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 		return nil, fmt.Errorf("Failed to get a account: %w", err)
 	}
 
-	value, ok := AccountType_Value[str]
-	if !ok {
-		return nil, fmt.Errorf("unknown account type in database: %s", str)
+	if value, ok := AccountType_Value[accType]; ok {
+		acc.AccountType = value
+	} else {
+		return nil, fmt.Errorf("Unknown account type from database: %s", accType)
 	}
 
-	ac.AccountType = value
-
-	return &ac, nil
+	return &acc, nil
 }
 
 // Delete row from `Account` table.
