@@ -142,10 +142,37 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 }
 
 // Delete row from `Account` table.
-func RemoveAccount(conn *pgx.Conn, a Account) error {
-	/* 1. Query for row with id a.ID
-	 * 2. If found, remove, else return error
-	 */
+func RemoveAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) error {
+	if ID == 0 {
+		return fmt.Errorf("Invalid account ID: %d", ID)
+	}
+
+	var accountExists uint64
+	err := db.QueryRow(
+		ctx,
+		"SELECT account_id FROM Account WHERE account_id = $1",
+		ID,
+	).Scan(&accountExists)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// target account doesn't exist
+			return ErrAccountNotFound
+		} else {
+			// random bullshit happened here, not recovering
+			return fmt.Errorf("Expected pgx.ErrNoRows or nil, got: %w", err)
+		}
+	}
+	// account exists, disintegrate that bitch
+	_, err = db.Exec(
+		ctx,
+		"DELETE FROM Account WHERE account_id = $1",
+		ID,
+	)
+	if err != nil {
+		return fmt.Errorf("Failed to delete account: %w", err)
+	}
+
 	return nil
 }
 
