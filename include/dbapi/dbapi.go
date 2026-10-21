@@ -135,17 +135,16 @@ func RemoveAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) error {
 		return fmt.Errorf("Invalid account ID: %d", ID)
 	}
 
-	if !accountExistsByID(ctx, db, ID) {
-		return ErrAccountNotFound
-	}
-	// account exists, disintegrate that bitch
-	_, err := db.Exec(
-		ctx,
-		"DELETE FROM Account WHERE account_id = $1",
-		ID,
-	)
+	tag, err := db.Exec(ctx, "Delete FROM Account WHERE account_id = $1", ID)
+
 	if err != nil {
-		return fmt.Errorf("Failed to delete account (id %d): %w", ID, err)
+		return fmt.Errorf("failed to delete account (id %d): %w", ID, err)
+	}
+	/* If you perform a deletion, how many deleted accounts are returned in the results?
+	(tag)
+	*/
+	if tag.RowsAffected() == 0 {
+		return ErrAccountNotFound
 	}
 
 	return nil
