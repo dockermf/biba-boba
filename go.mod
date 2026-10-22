@@ -1,6 +1,6 @@
 module github.com/dockermf/biba-boba
 
-go 1.26.5
+go 1.27
 
 require (
 	github.com/gin-gonic/gin v1.12.0
