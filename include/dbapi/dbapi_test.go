@@ -2,8 +2,9 @@ package dbapi_test
 
 import (
 	"context"
-	"testing"
+	"fmt"
 	"os"
+	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
     . "github.com/dockermf/biba-boba/include/dbapi"
@@ -11,8 +12,15 @@ import (
 
 // TestInvalidID calls (Remove|Get)Account functions with invalid user IDs.
 func TestInvalidID(t *testing.T) {
-	// DATABASE_URL = postgres://DB_USERNAME:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	// postgres://username:password@host:5432/database_name
+	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		os.Getenv("PGUSER"),
+		os.Getenv("PGPASSWORD"),
+		os.Getenv("PGHOST"),
+		os.Getenv("PGPORT"),
+		os.Getenv("PGDATABASE"),
+	)
+	pool, err := pgxpool.New(context.Background(), url)
 	if err != nil {
 		panic(err)
 	}
