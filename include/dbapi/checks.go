@@ -9,9 +9,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Returns true if account with username `username` was found in database;
-// otherwise returns false.
-func accountExistsByName(ctx context.Context, db *pgxpool.Pool, username string) bool {
+// Returns (true, nil) if account with username `username` was found in database;
+// otherwise returns (false, nil). If unexpected error happens, (false, error) is returned.
+func accountExistsByName(ctx context.Context, db *pgxpool.Pool, username string) (bool, error) {
 	var existingAccount string
 	err := db.QueryRow(
 		ctx,
@@ -20,17 +20,18 @@ func accountExistsByName(ctx context.Context, db *pgxpool.Pool, username string)
 	).Scan(&existingAccount)
 
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			fmt.Println("Bullshit error happened:", err);
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		} else {
+			return false, fmt.Errorf("Unexpected error: %w", err)
 		}
-		return false
 	}
-	return true
+	return true, nil
 }
 
-// Returns true if account with ID `ID` was found in database; otherwise
-// returns false.
-func accountExistsByID(ctx context.Context, db *pgxpool.Pool, ID uint64) bool {
+// Returns (true, nil) if account with ID `ID` was found in database; otherwise
+// returns (false, nil). If unexpected error happens, (false, error) is returned.
+func accountExistsByID(ctx context.Context, db *pgxpool.Pool, ID uint64) (bool, error) {
 	var existingAccount string
 	err := db.QueryRow(
 		ctx,
@@ -39,10 +40,11 @@ func accountExistsByID(ctx context.Context, db *pgxpool.Pool, ID uint64) bool {
 	).Scan(&existingAccount)
 
 	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			fmt.Println("Bullshit error happened:", err);
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, nil
+		} else {
+			return false, fmt.Errorf("Unexpected error: %w", err)
 		}
-		return false
 	}
-	return true
+	return true, nil
 }

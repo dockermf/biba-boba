@@ -78,12 +78,16 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 		return fmt.Errorf("Invalid account type: %v", accountType)
 	}
 
-	if accountExistsByName(ctx, db, username) {
+	exists, err := accountExistsByName(ctx, db, username)
+	if err != nil {
+		return err
+	}
+	if exists {
 		return ErrUsernameTaken
 	}
 
 	// TODO: hash password
-	_, err := db.Exec(
+	_, err = db.Exec(
 		ctx,
 		"INSERT INTO Account (account_type, username, password) VALUES ($1, $2, $3)",
 		typeName,
@@ -103,14 +107,18 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 		return nil, fmt.Errorf("Invalid account ID: %d", ID)
 	}
 
-	if !accountExistsByID(ctx, db, ID) {
+	exists, err := accountExistsByID(ctx, db, ID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
 		return nil, ErrAccountNotFound
 	}
 
 	var acc Account
 	var accType string
 
-	err := db.QueryRow(
+	err = db.QueryRow(
 		ctx,
 		"SELECT account_id, account_type, username, password, balance FROM Account WHERE account_id = $1",
 		ID,
