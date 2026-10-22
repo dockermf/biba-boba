@@ -61,6 +61,7 @@ type Account struct {
 
 // ERRORS
 var (
+	ErrInvalidID	   = errors.New("User ID is invalid")
 	ErrInvalidInput    = errors.New("Username or password is empty")
 	ErrUsernameTaken   = errors.New("Username already taken")
 	ErrAccountNotFound = errors.New("Account not found")
@@ -104,7 +105,7 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 // Retrieve account from `Account` table by ID.
 func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, error) {
 	if ID == 0 {
-		return nil, fmt.Errorf("Invalid account ID: %d", ID)
+		return nil, ErrInvalidID
 	}
 
 	exists, err := accountExistsByID(ctx, db, ID)
@@ -140,11 +141,10 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 // Delete row from `Account` table.
 func RemoveAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) error {
 	if ID == 0 {
-		return fmt.Errorf("Invalid account ID: %d", ID)
+		return ErrInvalidID
 	}
 
 	tag, err := db.Exec(ctx, "Delete FROM Account WHERE account_id = $1", ID)
-
 	if err != nil {
 		return fmt.Errorf("failed to delete account (id %d): %w", ID, err)
 	}
