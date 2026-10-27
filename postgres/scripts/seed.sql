@@ -78,9 +78,9 @@ CREATE TABLE Box (
 */
 CREATE TABLE BoxItem (
     box_id      INT NOT NULL REFERENCES Box(box_id) ON DELETE CASCADE,
-    item_id      INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
-    drop_chance  FLOAT NOT NULL CONSTRAINT chance_positive CHECK (drop_chance >= 0.0 AND drop_chance <= 100.0) DEFAULT 0.0,
-    CONSTRAINT pk_box_id_item_id PRIMARY KEY (box_id, item_id)
+    item_id     INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
+    drop_chance FLOAT NOT NULL CONSTRAINT chance_positive CHECK (drop_chance >= 0.0 AND drop_chance <= 100.0) DEFAULT 0.0,
+    CONSTRAINT  pk_box_id_item_id PRIMARY KEY (box_id, item_id)
 );
 
 /*
