@@ -36,6 +36,7 @@ CREATE TABLE Account (
     username     VARCHAR(50) UNIQUE NOT NULL,
     password     VARCHAR(100) NOT NULL,
     balance      BIGINT NOT NULL CONSTRAINT positive_balance CHECK (balance >= 0) DEFAULT 50000 --это короче 500.0 (делим на 100)
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     --CREATE INDEX idx_username ON Users (username)
 );
 
@@ -121,6 +122,7 @@ CREATE TABLE Listing (
     item_id       INT NOT NULL REFERENCES Item(item_id) ON DELETE CASCADE,
     item_quantity INT NOT NULL CONSTRAINT positive_quantity CHECK (item_quantity > 0),
     lot_price     BIGINT NOT NULL CONSTRAINT positive_price CHECK (lot_price > 0)
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 );
 
 INSERT INTO Account (account_type, username, password, balance) VALUES
