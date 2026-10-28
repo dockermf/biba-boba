@@ -61,22 +61,25 @@ type Account struct {
 
 // ERRORS
 var (
-	ErrInvalidID	   = errors.New("User ID is invalid")
-	ErrInvalidInput    = errors.New("Username or password is empty")
-	ErrUsernameTaken   = errors.New("Username already taken")
-	ErrAccountNotFound = errors.New("Account not found")
+	ErrInvalidID	      = errors.New("User ID is invalid")
+	ErrInvalidAccountType = errors.New("Account type is invalid")
+	ErrEmptyInput         = errors.New("User input is empty")
+	ErrBadInput           = errors.New("User input has forbidden characters")
+	ErrUsernameTaken      = errors.New("Username already taken")
+	ErrAccountNotFound    = errors.New("Account not found")
 )
 
 // Insert new row into `Account` table.
 func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountType, username, password string) error {
+	// TODO: properly check if empty|blank string
 	if username == "" || password == "" {
-		return ErrInvalidInput
+		return ErrEmptyInput
 	}
-	// TODO: sanitize password|username before doing SQL
+	// TODO: validate and sanitize password|username before doing SQL
 
 	typeName, ok := AccountType_Name[accountType]
 	if !ok {
-		return fmt.Errorf("Invalid account type: %v", accountType)
+		return ErrInvalidAccountType
 	}
 
 	exists, err := accountExistsByName(ctx, db, username)
