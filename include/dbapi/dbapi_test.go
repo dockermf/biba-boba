@@ -27,12 +27,59 @@ func TestInvalidID(t *testing.T) {
 
 	err = RemoveAccount(context.Background(), pool, 0)
 	if err == nil {
-		t.Errorf("RemoveAccount(context.Background(), pool, 0) = nil, want %v", ErrInvalidID)
+		t.Errorf("Remove id 0: nil, want [%v]", ErrInvalidID)
 	}
 
 	acc, err := GetAccount(context.Background(), pool, 0)
-	if acc != nil {
-		t.Errorf("GetAccount(context.Background(), pool, 0) = %v, %v, want nil, %v", acc, err, ErrInvalidID)
+	if err == nil {
+		t.Errorf("Get account id 0: [%v], [%v], want nil, [%v]", acc, err, ErrInvalidID)
+	}
+
+	defer pool.Close()
+}
+
+func TestCreateAccount(t *testing.T) {
+	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		os.Getenv("PGUSER"),
+		os.Getenv("PGPASSWORD"),
+		os.Getenv("PGHOST"),
+		os.Getenv("PGPORT"),
+		os.Getenv("PGDATABASE"),
+	)
+	pool, err := pgxpool.New(context.Background(), url)
+	if err != nil {
+		panic(err)
+	}
+
+	// Test invalid account type case
+	err = CreateAccount(context.Background(), pool, -1, "user", "password")
+	if err != ErrInvalidAccountType {
+		t.Log(err)
+		t.Errorf("Account type -1: [%v], want [%v]", err, ErrInvalidAccountType)
+	}
+
+	// Test empty username
+	err = CreateAccount(context.Background(), pool, AccountType_Regular, "", "something")
+	if err != ErrEmptyInput {
+		t.Errorf("Empty username: [%v], want [%v]", err, ErrEmptyInput)
+	}
+
+	// Test blank username (2 tabs)
+	err = CreateAccount(context.Background(), pool, AccountType_Regular, "\t\t", "something")
+	if err != ErrEmptyInput {
+		t.Errorf("Blank username: [%v], want [%v]", err, ErrEmptyInput)
+	}
+
+	// Test empty password
+	err = CreateAccount(context.Background(), pool, AccountType_Regular, "user", "")
+	if err != ErrEmptyInput {
+		t.Errorf("Empty password: [%v], want [%v]", err, ErrEmptyInput)
+	}
+
+	// Test blank password (a newline)
+	err = CreateAccount(context.Background(), pool, AccountType_Regular, "user", "\n")
+	if err != ErrEmptyInput {
+		t.Errorf("Blank password: [%v], want [%v]", err, ErrEmptyInput)
 	}
 
 	defer pool.Close()
