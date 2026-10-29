@@ -52,10 +52,10 @@ func TestCreateAccount(t *testing.T) {
 	}
 
 	// Test invalid account type case
-	err = CreateAccount(context.Background(), pool, -1, "user", "password")
+	err = CreateAccount(context.Background(), pool, 0, "user", "password")
 	if err != ErrInvalidAccountType {
 		t.Log(err)
-		t.Errorf("Account type -1: [%v], want [%v]", err, ErrInvalidAccountType)
+		t.Errorf("Account type 0: [%v], want [%v]", err, ErrInvalidAccountType)
 	}
 
 	// Test empty username
