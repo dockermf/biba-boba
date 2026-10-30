@@ -4,6 +4,7 @@ package dbapi // import "github.com/dockermf/biba-boba/include/dbapi"
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -11,7 +12,9 @@ import (
 
 // Insert new row into `Account` table.
 func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountType, username, password string) error {
-	// TODO: properly check if empty|blank string
+	// Reject strings that are empty or contain only whitespace.
+	username = strings.TrimSpace(username)
+
 	if username == "" || password == "" {
 		return ErrEmptyInput
 	}
