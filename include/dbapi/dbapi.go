@@ -3,6 +3,7 @@ package dbapi // import "github.com/dockermf/biba-boba/include/dbapi"
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -25,24 +26,21 @@ func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountTyp
 		return ErrInvalidAccountType
 	}
 
-	exists, err := accountExistsByName(ctx, db, username)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return ErrUsernameTaken
-	}
-
 	// TODO: hash password
-	_, err = db.Exec(
+	tag, err := db.Exec(
 		ctx,
-		"INSERT INTO Account (account_type, username, password) VALUES ($1, $2, $3)",
-		typeName,
-		username,
-		password,
+		`INSERT INTO Account (account_type, username, password)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (username) DO NOTHING`,
+		typeName, username, password,
 	)
+
 	if err != nil {
 		return fmt.Errorf("Failed to create new account: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return ErrUsernameTaken
 	}
 
 	return nil
@@ -54,32 +52,27 @@ func GetAccount(ctx context.Context, db *pgxpool.Pool, ID uint64) (*Account, err
 		return nil, ErrInvalidID
 	}
 
-	exists, err := accountExistsByID(ctx, db, ID)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, ErrAccountNotFound
-	}
-
 	var acc Account
 	var accType string
 
-	err = db.QueryRow(
+	err := db.QueryRow(
 		ctx,
 		"SELECT account_id, account_type, username, password, balance FROM Account WHERE account_id = $1",
 		ID,
 	).Scan(&acc.ID, &accType, &acc.Username, &acc.Password, &acc.Balance)
 
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrAccountNotFound
+		}
 		return nil, fmt.Errorf("Unexpected error: %w", err)
 	}
 
-	if value, ok := AccountType_Value[accType]; ok {
-		acc.AccountType = value
-	} else {
+	accountType, ok := AccountType_Value[accType]
+	if !ok {
 		return nil, fmt.Errorf("Unknown account type from database: %s", accType)
 	}
+	acc.AccountType = accountType
 
 	return &acc, nil
 }
