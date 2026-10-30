@@ -116,6 +116,16 @@ CREATE TABLE Transaction (
     --CREATE INDEX idx_transaction_type ON Transaction (transaction_type)
 );
 
+-- ВРЕМЕННАЯ ТАБЛИЦа НА транкзации по типу покупка кейса, начисления промокода и админа.
+CREATE TABLE Ledger (
+    ledger_id       INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    account_id      INT NOT NULL REFERENCES Account(account_id) ON DELETE RESTRICT,
+    amount          BIGINT NOT NULL CHECK (amount <> 0),
+    reason          VARCHAR(20) NOT NULL CHECK (reason IN ('trade_buy','trade_sell','promo','admin_grant','case_purchase')),
+    transaction_id  INT REFERENCES Transaction(transaction_id),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE Listing (
     listing_id    INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     seller_id     INT NOT NULL REFERENCES Account(account_id) ON DELETE CASCADE,
