@@ -6,12 +6,14 @@ import (
 	"os"
 	"testing"
 
+	. "github.com/dockermf/biba-boba/include/dbapi"
 	"github.com/jackc/pgx/v5/pgxpool"
-    . "github.com/dockermf/biba-boba/include/dbapi"
 )
 
-// TestInvalidID calls (Remove|Get)Account functions with invalid user IDs.
-func TestInvalidID(t *testing.T) {
+// newTestPool creates a connection pool from PG* environment variables.
+func newTestPool(t *testing.T) *pgxpool.Pool {
+	t.Helper()
+
 	// postgres://username:password@host:5432/database_name
 	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		os.Getenv("PGUSER"),
@@ -22,10 +24,18 @@ func TestInvalidID(t *testing.T) {
 	)
 	pool, err := pgxpool.New(context.Background(), url)
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to create connection pool: %v", err)
 	}
+	t.Cleanup(pool.Close)
 
-	err = RemoveAccount(context.Background(), pool, 0)
+	return pool
+}
+
+// TestInvalidID calls (Remove|Get)Account functions with invalid user IDs.
+func TestInvalidID(t *testing.T) {
+	pool := newTestPool(t)
+
+	err := RemoveAccount(context.Background(), pool, 0)
 	if err == nil {
 		t.Errorf("Remove id 0: nil, want [%v]", ErrInvalidID)
 	}
@@ -34,28 +44,15 @@ func TestInvalidID(t *testing.T) {
 	if err == nil {
 		t.Errorf("Get account id 0: [%v], [%v], want nil, [%v]", acc, err, ErrInvalidID)
 	}
-
-	defer pool.Close()
 }
 
 func TestCreateAccount(t *testing.T) {
-	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
-		os.Getenv("PGUSER"),
-		os.Getenv("PGPASSWORD"),
-		os.Getenv("PGHOST"),
-		os.Getenv("PGPORT"),
-		os.Getenv("PGDATABASE"),
-	)
-	pool, err := pgxpool.New(context.Background(), url)
-	if err != nil {
-		panic(err)
-	}
+	pool := newTestPool(t)
 
-	// Test invalid account type case
-	err = CreateAccount(context.Background(), pool, 0, "user", "password")
+	// Test invalid account type case (2 is not a defined AccountType)
+	err := CreateAccount(context.Background(), pool, AccountType(2), "user", "password")
 	if err != ErrInvalidAccountType {
-		t.Log(err)
-		t.Errorf("Account type 0: [%v], want [%v]", err, ErrInvalidAccountType)
+		t.Errorf("Account type 2: [%v], want [%v]", err, ErrInvalidAccountType)
 	}
 
 	// Test empty username
@@ -81,6 +78,4 @@ func TestCreateAccount(t *testing.T) {
 	if err != ErrEmptyInput {
 		t.Errorf("Blank password: [%v], want [%v]", err, ErrEmptyInput)
 	}
-
-	defer pool.Close()
 }
