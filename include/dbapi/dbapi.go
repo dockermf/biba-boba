@@ -15,6 +15,7 @@ import (
 func CreateAccount(ctx context.Context, db *pgxpool.Pool, accountType AccountType, username, password string) error {
 	// Reject strings that are empty or contain only whitespace.
 	username = strings.TrimSpace(username)
+	password = strings.TrimSpace(password)
 
 	if username == "" || password == "" {
 		return ErrEmptyInput
