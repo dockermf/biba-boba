@@ -1,0 +1,11 @@
+# ignore all shit
+*
+# files to let docker see during build
+!main.go
+!include
+# Note: go.* doesn't work, whitelists every file it seems
+!go.mod
+!go.sum
+!docker
+# ignore database file (root permissions, will complain during image build)
+**/database
